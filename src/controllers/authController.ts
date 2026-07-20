@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import { User } from "../models/User";
 import { generateAccessToken, generateRefreshToken } from "../Utils/generateTokens";
+import { AuthRequest } from "../middleware/authMiddleware";
 
 export async function signup(req: Request, res: Response) {
   try {
@@ -39,7 +41,6 @@ export async function login(req: Request, res: Response) {
       return res.status(400).json({ message: "Missing email or password" });
     }
 
-    // password has `select: false` in the schema, so we must explicitly ask for it here
     const user = await User.findOne({ email }).select("+password");
 
     if (!user || !user.password) {
@@ -62,5 +63,47 @@ export async function login(req: Request, res: Response) {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
+  }
+}
+
+export async function getMe(req: AuthRequest, res: Response) {
+  try {
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      user: { id: user.id, name: user.name, email: user.email },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
+export async function refresh(req: Request, res: Response) {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(401).json({ message: "No refresh token provided" });
+    }
+
+    const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+    if (!REFRESH_SECRET) {
+      return res.status(500).json({ message: "Server misconfiguration" });
+    }
+
+    const decoded = jwt.verify(refreshToken, REFRESH_SECRET) as unknown as {
+      userId: string;
+    };
+
+    const newAccessToken = generateAccessToken(decoded.userId);
+
+    res.status(200).json({ accessToken: newAccessToken });
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid or expired refresh token" });
   }
 }
