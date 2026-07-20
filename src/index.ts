@@ -3,17 +3,16 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 
 import authRoutes from "./routes/authRoutes";
-
-
+import userRoutes from "./routes/userRoutes";
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 
-
-
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI;
 
