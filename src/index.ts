@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
+import problemRoutes from "./routes/problemRoutes";
+import activityRoutes from "./routes/activityRoutes";
 
 dotenv.config();
 
@@ -12,13 +14,14 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/problems", problemRoutes);
+app.use("/api/activities", activityRoutes);
 
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI;
 
 app.get("/db-check", async (req, res) => {
   const state = mongoose.connection.readyState;
-  // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
   res.json({ mongooseState: state });
 });
 
