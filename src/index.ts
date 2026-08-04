@@ -15,16 +15,20 @@ import activityRoutes from "./routes/activityRoutes";
 
 const app = express();
 app.use(express.json());
-
+app.use(passport.initialize());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/problems", problemRoutes);
 app.use("/api/activities", activityRoutes);
 app.use("/api/github", githubRoutes);
-app.use(passport.initialize());
+
 
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI;
+
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
+});
 
 app.get("/db-check", async (req, res) => {
   const state = mongoose.connection.readyState;
