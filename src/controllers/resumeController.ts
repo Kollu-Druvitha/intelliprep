@@ -41,3 +41,45 @@ export async function analyzeResume(req: AuthRequest, res: Response) {
     res.status(500).json({ message: "Server error" });
   }
 }
+
+export async function analyzeResumePdf(req: AuthRequest, res: Response) {
+  try {
+    const { jobDescription } = req.body;
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ message: "PDF file is required" });
+    }
+    if (!jobDescription) {
+      return res.status(400).json({ message: "jobDescription is required" });
+    }
+
+    const aiServiceUrl = process.env.AI_SERVICE_URL;
+    if (!aiServiceUrl) {
+      return res.status(500).json({ message: "AI service not configured" });
+    }
+
+    // Build a multipart form to forward to the Python service
+    const formData = new FormData();
+    formData.append("file", new Blob([new Uint8Array(file.buffer)]), file.originalname);
+
+    const response = await fetch(
+      `${aiServiceUrl}/score-resume-pdf?job_description=${encodeURIComponent(jobDescription)}`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      console.error("AI service error:", response.status, await response.text());
+      return res.status(502).json({ message: "Failed to analyze resume" });
+    }
+
+    const result = await response.json();
+    res.status(200).json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+}
