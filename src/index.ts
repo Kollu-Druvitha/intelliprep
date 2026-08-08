@@ -5,7 +5,8 @@ import mongoose from "mongoose";
 //import dotenv from "dotenv";
 import githubRoutes from "./routes/githubRoutes";
 import passport from "./config/passport";
-
+import mentorRoutes from "./routes/mentorRoutes";
+import roadmapRoutes from "./routes/roadmapRoutes";
 import resumeRoutes from "./routes/resumeRoutes";
 
 import authRoutes from "./routes/authRoutes";
@@ -24,6 +25,8 @@ app.use("/api/problems", problemRoutes);
 app.use("/api/activities", activityRoutes);
 app.use("/api/github", githubRoutes);
 app.use("/api/resume", resumeRoutes);
+app.use("/api/mentor", mentorRoutes);
+app.use("/api/roadmap", roadmapRoutes);
 
 
 const PORT = process.env.PORT || 5000;
