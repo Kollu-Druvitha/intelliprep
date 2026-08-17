@@ -15,6 +15,8 @@ import problemRoutes from "./routes/problemRoutes";
 import activityRoutes from "./routes/activityRoutes";
 
 
+import "./config/redis";
+
 import cron from "node-cron";
 import { generateAndSendWeeklyReports } from "./services/reportService";
 //dotenv.config();
