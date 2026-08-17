@@ -14,6 +14,9 @@ import userRoutes from "./routes/userRoutes";
 import problemRoutes from "./routes/problemRoutes";
 import activityRoutes from "./routes/activityRoutes";
 
+
+import cron from "node-cron";
+import { generateAndSendWeeklyReports } from "./services/reportService";
 //dotenv.config();
 
 const app = express();
@@ -61,3 +64,13 @@ async function startServer() {
 }
 
 startServer();
+
+cron.schedule("0 9 * * 1", () => {
+  console.log("Running weekly report job...");
+  generateAndSendWeeklyReports();
+});
+
+app.get("/api/test-weekly-report", async (req, res) => {
+  await generateAndSendWeeklyReports();
+  res.json({ message: "Weekly report job triggered manually" });
+});
