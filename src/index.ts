@@ -15,6 +15,8 @@ import problemRoutes from "./routes/problemRoutes";
 import activityRoutes from "./routes/activityRoutes";
 
 
+import "./workers/emailWorker";
+
 import "./config/redis";
 
 import cron from "node-cron";
@@ -72,6 +74,12 @@ cron.schedule("0 9 * * 1", () => {
   generateAndSendWeeklyReports();
 });
 
+app.get("/api/test-weekly-report", async (req, res) => {
+  await generateAndSendWeeklyReports();
+  res.json({ message: "Weekly report job triggered manually" });
+});
+
+// temporary, for testing only — remove before final submission
 app.get("/api/test-weekly-report", async (req, res) => {
   await generateAndSendWeeklyReports();
   res.json({ message: "Weekly report job triggered manually" });

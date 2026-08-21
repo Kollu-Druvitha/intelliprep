@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { Activity } from "../models/Activity";
 import { User } from "../models/User";
-import { sendWeeklyReportEmail } from "./emailService";
+import { emailQueue } from "../queues/emailQueue";
 
 export async function generateAndSendWeeklyReports() {
   const oneWeekAgo = new Date();
@@ -40,10 +40,15 @@ export async function generateAndSendWeeklyReports() {
     const topics = activities.map((a) => a._id);
 
     try {
-      await sendWeeklyReportEmail(user.email, user.name, solvedCount, topics);
-      console.log(`Weekly report sent to ${user.email}`);
+      await emailQueue.add("send-weekly-report", {
+        to: user.email,
+        name: user.name,
+        solvedCount,
+        topics,
+      });
+      console.log(`Enqueued weekly report job for ${user.email}`);
     } catch (err) {
-      console.error(`Failed to send report to ${user.email}:`, err);
+      console.error(`Failed to enqueue report for ${user.email}:`, err);
     }
   }
 }

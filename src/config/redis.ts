@@ -6,7 +6,9 @@ if (!REDIS_URL) {
   console.error("REDIS_URL is not defined in .env");
 }
 
-const redis = new Redis(REDIS_URL as string);
+const redis = new Redis(REDIS_URL as string, {
+  maxRetriesPerRequest: null,
+});
 
 redis.on("connect", () => {
   console.log("Redis connected");
