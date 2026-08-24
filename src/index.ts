@@ -15,6 +15,9 @@ import problemRoutes from "./routes/problemRoutes";
 import activityRoutes from "./routes/activityRoutes";
 
 
+import http from "http";
+import { Server } from "socket.io";
+
 import "./workers/emailWorker";
 
 import "./config/redis";
@@ -58,7 +61,7 @@ async function startServer() {
     await mongoose.connect(MONGODB_URI);
     console.log("MongoDB connected");
 
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
   } catch (err) {
@@ -79,8 +82,45 @@ app.get("/api/test-weekly-report", async (req, res) => {
   res.json({ message: "Weekly report job triggered manually" });
 });
 
-// temporary, for testing only — remove before final submission
-app.get("/api/test-weekly-report", async (req, res) => {
-  await generateAndSendWeeklyReports();
-  res.json({ message: "Weekly report job triggered manually" });
+
+// app.get("/api/test-weekly-report", async (req, res) => {
+//   await generateAndSendWeeklyReports();
+//   res.json({ message: "Weekly report job triggered manually" });
+// });
+
+
+
+const server = http.createServer(app);
+
+export const io = new Server(server, {
+  cors: {
+    origin: "*", // tighten this to your real frontend URL once it exists
+  },
 });
+
+const userSocketMap = new Map<string, string>(); // userId -> socket.id
+
+io.on("connection", (socket) => {
+  console.log("Socket connected:", socket.id);
+
+  socket.on("register", (userId: string) => {
+    userSocketMap.set(userId, socket.id);
+    console.log(`User ${userId} registered on socket ${socket.id}`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Socket disconnected:", socket.id);
+    for (const [userId, socketId] of userSocketMap.entries()) {
+      if (socketId === socket.id) {
+        userSocketMap.delete(userId);
+      }
+    }
+  });
+});
+
+export function notifyUser(userId: string, event: string, data: any) {
+  const socketId = userSocketMap.get(userId);
+  if (socketId) {
+    io.to(socketId).emit(event, data);
+  }
+}

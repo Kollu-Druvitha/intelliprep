@@ -45,6 +45,7 @@ export async function generateAndSendWeeklyReports() {
         name: user.name,
         solvedCount,
         topics,
+        userId: user.id,
       });
       console.log(`Enqueued weekly report job for ${user.email}`);
     } catch (err) {
