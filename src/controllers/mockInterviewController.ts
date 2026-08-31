@@ -25,8 +25,8 @@ export async function startInterview(req: AuthRequest, res: Response) {
 
     const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
 
-    const openingPrompt = `You are conducting a ${type} technical interview for a software engineering candidate.
-Ask ONE opening question appropriate for a ${type} interview. Be direct and professional, like a real interviewer.
+    const openingPrompt = `You are conducting ${getInterviewContext(type)} for a software engineering candidate.
+Ask ONE opening question appropriate for this interview type. Be direct and professional, like a real interviewer.
 Respond with ONLY the question text, nothing else — no preamble, no markdown.`;
 
     const result = await model.generateContent(openingPrompt);
@@ -81,7 +81,7 @@ export async function respondToInterview(req: AuthRequest, res: Response) {
     const transcript = buildTranscript(interview.messages);
     const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
 
-    const prompt = `You are conducting a ${interview.type} technical interview. Here is the conversation so far:
+    const prompt = `You are conducting ${getInterviewContext(interview.type)}. Here is the conversation so far:
 
 ${transcript}
 
@@ -127,7 +127,7 @@ export async function endInterview(req: AuthRequest, res: Response) {
     const transcript = buildTranscript(interview.messages);
     const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
 
-    const evalPrompt = `You are evaluating a completed ${interview.type} technical interview. Full transcript:
+    const evalPrompt = `You are evaluating a completed interview (${getInterviewContext(interview.type)}). Full transcript:
 
 ${transcript}
 
@@ -157,5 +157,16 @@ Respond ONLY with valid JSON, no markdown, in exactly this shape:
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
+  }
+}
+
+function getInterviewContext(type: string): string {
+  switch (type) {
+    case "HR":
+      return "a behavioral/HR interview, focused on past experiences, teamwork, conflict resolution, and motivation — not technical coding questions";
+    case "SystemDesign":
+      return "a system design interview, focused on architecture, scalability, and trade-offs for a real-world system";
+    default:
+      return "a technical DSA (data structures & algorithms) interview";
   }
 }
