@@ -26,6 +26,10 @@ import cron from "node-cron";
 import { generateAndSendWeeklyReports } from "./services/reportService";
 //dotenv.config();
 
+import mockInterviewRoutes from "./routes/mockInterviewRoutes";
+
+
+
 const app = express();
 app.use(express.json());
 app.use(passport.initialize());
@@ -37,6 +41,8 @@ app.use("/api/github", githubRoutes);
 app.use("/api/resume", resumeRoutes);
 app.use("/api/mentor", mentorRoutes);
 app.use("/api/roadmap", roadmapRoutes);
+app.use("/api/mock-interview", mockInterviewRoutes);
+
 
 
 const PORT = process.env.PORT || 5000;
