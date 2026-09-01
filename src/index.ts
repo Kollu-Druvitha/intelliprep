@@ -27,11 +27,12 @@ import { generateAndSendWeeklyReports } from "./services/reportService";
 //dotenv.config();
 
 import mockInterviewRoutes from "./routes/mockInterviewRoutes";
-
+import cors from "cors";
 
 
 const app = express();
 app.use(express.json());
+app.use(cors({ origin: "http://localhost:3000" }));
 app.use(passport.initialize());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
